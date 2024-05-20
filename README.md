@@ -82,7 +82,7 @@ We needed to create a queue of operations, to achieve automation:
 
 `available_nations = sorted(set(variable['language'] for variable in variable_sets))
 
-operation_queue = []`
+operation_queue = []´
 
 `while True:
     print("Available nations:")
