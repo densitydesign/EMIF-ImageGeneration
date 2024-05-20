@@ -75,16 +75,16 @@ txt2img_url = f"{url}{endpoint}txt2img"`
 
 ### We define the location where we need the images to be saved.
 
-base_folder = "/GENERATIONS"
+`base_folder = "/GENERATIONS"`
 
 ### Ok this is specific for our nation variables:
 We needed to create a queue of operations, to achieve automation:
 
-available_nations = sorted(set(variable['language'] for variable in variable_sets))
+`available_nations = sorted(set(variable['language'] for variable in variable_sets))
 
-operation_queue = []
+operation_queue = []`
 
-while True:
+`while True:
     print("Available nations:")
     for i, nation in enumerate(available_nations, start=1):
         print(f"{i}. {nation}")
@@ -109,23 +109,23 @@ while True:
 
 print("\nChosen operation queue:")
 for idx, (nation, category, num_images) in enumerate(operation_queue, start=1):
-    print(f"{idx}. Nation: {nation} - Category: {category} - Number of Images: {num_images}")
+    print(f"{idx}. Nation: {nation} - Category: {category} - Number of Images: {num_images}")`
 
 Fundamentally, this initial part is for queue setupping.
 
 ### We store the img data into a csv to retain the base64 text encode
-csv_filename = "image_data.csv"
+`csv_filename = "image_data.csv"
 csv_path = os.path.join(base_folder, csv_filename)
 
 csv_headers = ["Nation", "Category", "Base64 Code", "Filename", "CPU Usage (%)", "RAM Usage (MB)"]
 
 with open(csv_path, mode='w', newline='') as file:
     writer = csv.writer(file)
-    writer.writerow(csv_headers)
+    writer.writerow(csv_headers)`
 
 ### This is the actual generation pipeline. we firstly identify the correct prompt based on how the queue was formatted. Then we feed the prompt to the JSON payload.
 
-    # Iterate over the operation queue and generate images for each chosen combination
+    `# Iterate over the operation queue and generate images for each chosen combination
     for idx, (chosen_nation, category, num_images) in enumerate(operation_queue, start=1):
         # Filter variable_sets based on user input
         filtered_variable_sets = [variables for variables in variable_sets if variables["language"].lower() == chosen_nation.lower() and category.lower() in variables["prompt_addition"].lower()]
@@ -146,36 +146,36 @@ with open(csv_path, mode='w', newline='') as file:
                 category_folder = os.path.join(nation_folder, category)
 
                 # Create the nested folders if they don't exist
-                os.makedirs(category_folder, exist_ok=True)
+                os.makedirs(category_folder, exist_ok=True)`
 
 ## We also initialize some time in python to track how much time it's needed for the whole generation
 
-                # Initialize elapsed time
+                `# Initialize elapsed time
                 total_elapsed_time = 0
 
                 # Initialize list to store elapsed times for each image
-                elapsed_times = []
+                elapsed_times = []`
 
 ## Then we iterate the process, keeping an eye on the system resources, using psutil.
 
-                # Iterate for the specified number of images
+                `# Iterate for the specified number of images
                 for i in tqdm(range(num_images), desc=f"Generating images for {chosen_nation} - {category}"):
                     try:
                         # Monitor system resources before making the request
                         cpu_usage = psutil.cpu_percent()
-                        ram_usage = psutil.virtual_memory().used / (1024 * 1024)  # Convert to MB
+                        ram_usage = psutil.virtual_memory().used / (1024 * 1024)  # Convert to MB`
 
 ## This is the key point of our process. We send a POST request to the API and get the response which the we parse (it's a json).
 
-                        # Send a POST request to the Draw Things API with the updated parameters
+                        `# Send a POST request to the Draw Things API with the updated parameters
                         response = requests.post(txt2img_url, json=txt2img_data)
 
                         # Parse the JSON response
-                        r = response.json()
+                        r = response.json()`
 
 ## Having obtained the response we loop through the array of images contained in the json and decode each of them into a PNG image.
 
-                        # Loop through the images in the response
+                        `# Loop through the images in the response
                         for idx, image_base64 in enumerate(r['images']):
                             # Decode the base64 image data
                             image_data = base64.b64decode(image_base64.split(",", 1)[0])
@@ -190,12 +190,12 @@ with open(csv_path, mode='w', newline='') as file:
                             image_path = os.path.join(category_folder, image_filename)
 
                             # Save the image as a PNG file
-                            image.save(image_path)
+                            image.save(image_path)`
 
 ## This step is needed to track how much resources were used in each generation and in the overall process, to reverse obtain the amount of power involved.
 
-                            # Write image data and system monitoring data to the CSV file
-                            writer.writerow([chosen_nation, category, image_base64, image_filename, cpu_usage, ram_usage])
+                            `# Write image data and system monitoring data to the CSV file
+                            writer.writerow([chosen_nation, category, image_base64, image_filename, cpu_usage, ram_usage])`
 
 ### PIL is used as corruption - checker in order to understand if the decoded IMG is healthy.
                             `try:
