@@ -1,69 +1,63 @@
 # EMIF-ImageGeneration
 Private repository for the Stable Diffusion image generation pipeline.
 
+## The Guide
+Below you'll find a practical guide on how to access the Python code responsible for the image generation pipeline.
 
-# The guide
-Here below you'll find a practical guide on how to access the python code responsible for the image generation Pipeline.
-
-## Theorical background on Stable Diffusion
+## Theoretical Background on Stable Diffusion
 
 ### Draw Things
 
-For the whole generation pipeline we used Drawthings which is an ap for image generation widely used on arm64 Macs (since our machine were actually just M1 Pro macs).
+For the whole generation pipeline, we used **Draw Things**, an app for image generation widely used on ARM64 Macs (since our machines were M1 Pro Macs). Draw Things is very efficient compared to (let's guess) AUTOMATIC1111.
 
-Draw things is avery efficient compared to (let's guess) AUTOMATIC1111.
+Theoretically speaking, our stable diffusion process worked like this:
 
-Theorically speaking our stable diffusion process worked like this.
+We bake a prompt via `txt2img` generation using the **Stable Diffusion XL official model** as our base model.
 
-We bake a prompt via txt2img generation using StableDiffusionXL official model as our base model.
+> **IMPORTANT**: We forced ourselves to use the base SDXL model to keep the results coherent with the LAION dataset. We noticed that using checkpoints as base models contributed heavily to biases in the generations, creating patterns of colors, objects, subjects, etc., that were not consistent with the LAION dataset itself.
 
-[IMPORTANT] We forced ourselves in sing the base SDXL model as we needed to keep the results coherent with the LAION dataset. We indeed noticed that using checkpoints as base-models contributed heavily to biases in the generations, creating patterns of colors, object, subjects, etc.. that were not really consistent with the LAION dataset itself.  
- 
-Then we pass this img to the Stable Diffsion XL Official Refiner at 70% oif the generation. This step allows us to achieve way more details in the final image rather than just a one-shot base-model. Then, the image is passed again to the Hi-Res fix of SDXL. This passage is mainly intended to remove deformations in subjects and aberrations. Also, this step allows us to achieve way more details inside images and contributes to a generic image stabilization.
+Then we pass this image to the **Stable Diffusion XL Official Refiner** at 70% of the generation. This step allows us to achieve way more details in the final image rather than just a one-shot base model. Then, the image is passed again to the Hi-Res fix of SDXL. This passage is mainly intended to remove deformations in subjects and aberrations. Also, this step allows us to achieve way more details inside images and contributes to generic image stabilization.
 
-Having obtained a ```1024x1024``` image then we pass it to UltraSharp4x upscaler with a ```200%``` upscale size to achieve a ```2048x2048 image``` we could actively work on for printing purposes. 2048px correspond roughly to 4cm in a hypotethically 300dpi printing.
+Having obtained a `1024x1024` image, we then pass it to **UltraSharp4x upscaler** with a `200%` upscale size to achieve a `2048x2048` image we could actively work on for printing purposes. 2048px corresponds roughly to 4cm in a hypothetical 300dpi printing.
 
-The we baked this image through a img2img process using a mixture of ControlNet, tiling mechanism and base img2img using ```JUGGERNAUT model variation of SDXL```. In order to not lose the overall img, which is our main goal, the % of img2img generations was limited to ```30%```. 
-This particular value allows us to intervene on the single objects of the generations, to restore their deformed shapes into photographic quality objects. The parameters used for the various ```ControlNet``` were tweaked from the original ones to achieve a more smooth and less crisp image.
+Then we bake this image through an `img2img` process using a mixture of **ControlNet**, tiling mechanism, and base `img2img` using the **JUGGERNAUT model variation of SDXL**. In order to not lose the overall image, which is our main goal, the percentage of `img2img` generations was limited to `30%`. This particular value allows us to intervene on the single objects of the generations, to restore their deformed shapes into photographic quality objects. The parameters used for the various `ControlNet` were tweaked from the original ones to achieve a smoother and less crisp image.
 
-The original script used for this step is called "Creative Upscale" and its user-generated, available directly on Drawthings. Especially, we extracted the various parameters used and implemented those in the python script we'll explain later.
+The original script used for this step is called "Creative Upscale" and is user-generated, available directly on Draw Things. Especially, we extracted the various parameters used and implemented those in the Python script we'll explain later.
 
-The output of this process is a ```2048x2048``` image, highly photorealistic, loyal to the LAION dataset and SDXL generation mechanism.
+The output of this process is a `2048x2048` image, highly photorealistic, loyal to the LAION dataset and SDXL generation mechanism.
 
-## Theorical background of Draw Things platform
+## Theoretical Background of Draw Things Platform
 
-In order to generate our dataset of images ```(40*2*10 = 800)``` we had to find a way to automatize this process in both the txt2img step and the img2img step.
+In order to generate our dataset of images `(40*2*10 = 800)`, we had to find a way to automate this process in both the `txt2img` step and the `img2img` step.
 
 ### The API
 
-Draw Things relies on sdapi, but that's not really so much documentation on how to use it. In DT interface ("advanced") is possible to create a localhost with custom port to push JSON payloads and headlessly control the software.
+Draw Things relies on `sdapi`, but there's not much documentation on how to use it. In the DT interface ("advanced"), it's possible to create a localhost with a custom port to push JSON payloads and headlessly control the software.
 
 Basically, it works like this:
 
-#### Request method
+#### Request Method
 
-We push a request to the localhost containing the json payload, which is a fixed 
-template of variables that sdapi interpretes and applies to generate images.
+We push a request to the localhost containing the JSON payload, which is a fixed template of variables that `sdapi` interprets and applies to generate images.
 
-The host answers mainly with a base64-encoded image. We then have to decode this image into a png, jpg or whatever: we chose png format.
+The host answers mainly with a base64-encoded image. We then have to decode this image into a PNG, JPG, or whatever format we choose: we chose PNG format.
 
-The library used to make this request, is "requests" (how odd).
+The library used to make this request is "requests" (how odd).
 
-```
+```python
 response = requests.post(endpoint, json=payload)
-                    
 r = response.json()
 ```
 
-### The JSON payload
+### The JSON Payload
 
-The JSON payload we send to the API is structred in two slighlty different ways based on the endpoint we are targetting.
+The JSON payload we send to the API is structured in two slightly different ways based on the endpoint we are targeting.
 
-if we target /img2img or /txt2img there are some variables that change. Luckily, the API is able to provide easy-to-debug prints were fed with non compatible variables in the payload.
+If we target `/img2img` or `/txt2img`, there are some variables that change. Luckily, the API is able to provide easy-to-debug prints when fed with non-compatible variables in the payload.
 
-[IMPORTANT] Generically in this project we'll refer to the payload as "api_data".
+> **IMPORTANT**: Generally, in this project, we'll refer to the payload as "api_data".
 
-You can find the complete sdapi payload in the file named: api_payload list.
+You can find the complete `sdapi` payload in the file named: `api_payload list`.
 
 ## The pipeline itself
 
@@ -74,8 +68,6 @@ The first script is responsible of generating the images, the second, to augment
 We'll take some lines to analyze each of them, in-depth:
 
 # Generation
-
-Certainly! Below is the content you provided, tidied up with appropriate Markdown formatting and code blocks.
 
 ### We define the IP, PORT and URL of API:
 
@@ -414,6 +406,24 @@ with tqdm(total=total_images, desc="Processing Images") as pbar:
                 print(f"Skipping {filename}: Unsupported file format")
 ```
 ### Then we just move over to the next unprocessed img.
+
+The output of the entire pipeline is a folder of 2048x2048 images, highly photorealistic.
+The structure of the output is:
+
+```
+GENERATION
+|-Nation
+    |--Workers
+    |--Family
+```
+# Image segmentation
+
+We need then to proceed with img-segmenetation to divide the various objects of the images.
+To automate this process we used the SegmentAnything library of META AI, tweaked and adapted to work with our structured data. We won't go deep on how this thing works but it works, with a definetly high precision.
+
+The output of this script is a folder strctured the same way sa before but with pieces of images, each in 1:1 png with the same location as before, cut-outed from everything else.
+
+
 
 
 
