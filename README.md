@@ -7,12 +7,16 @@ Below you'll find a practical guide on how to access the Python code responsible
 
 ## Theoretical Background on Stable Diffusion
 
+![Draw Things](/DrawThings.png)
+
 ### Draw Things
 
 For the whole generation pipeline, we used **[Draw Things](https://drawthings.ai/)**, an app for image generation widely used on ```ARM64 Macs``` (since our machines were M1 Pro Macs).
 Draw Things is very efficient compared to (let's guess) AUTOMATIC1111. 🎨
 
-Theoretically speaking, our stable diffusion process worked like this:
+## Theoretically speaking, our stable diffusion process worked like this:
+
+![Stable diffusion scheme](/Diffusion_scheme.jpg)
 
 We applied a prompt via `txt2img` generation using the [Stable Diffusion XL official model](https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0) as our base model.
 
@@ -64,6 +68,8 @@ If we target `/img2img` or `/txt2img`, there are some variables that change. Luc
 You can find the complete `sdapi` payload in the file named: `api_payload list`.
 
 ## The pipeline itself
+
+![Pipeline scheme](pipeline_scheme.jpg)
 
 For our purposes, we structured the pipeline this way: [img]
 
