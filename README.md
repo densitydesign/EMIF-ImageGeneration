@@ -34,6 +34,8 @@ The original script used for this step is called "Creative Upscale" and is user-
 
 The output of this process is a `2048x2048` image, highly photorealistic, loyal to the LAION dataset and SDXL generation mechanism.
 
+![Output comparison](/comparison_or_up.png)
+
 ## Theoretical Background of Draw Things Platform
 
 In order to generate our dataset of images `(40*2*10 = 800)`, we had to find a way to automate this process in both the `txt2img` step and the `img2img` step.
@@ -49,13 +51,11 @@ Basically, it works like this:
 The endpoints provided by DT are:
 
 ```python
-
-    (http://{IP}:{PORT}/txt2img)
+(http://{IP}:{PORT}/txt2img)
 ```
 
 ```python
-    (http://{IP}:{PORT}/img2img)
-
+(http://{IP}:{PORT}/img2img)
 ```
 
 #### Request Method
@@ -77,7 +77,7 @@ The JSON payload we send to the API is structured in two slightly different ways
 
 If we target `/img2img` or `/txt2img`, there are some variables that change. Luckily, the API is able to provide easy-to-debug prints when fed with non-compatible variables in the payload.
 
-> **IMPORTANT**: Generally, in this project, we'll refer to the payload as "api_data".
+> **IMPORTANT**: Generally, in this project, we'll refer to the payload as "api_data" or something similar.
 
 You can find the complete `sdapi` payload in the file named: `api_payload list`.
 
