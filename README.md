@@ -44,6 +44,20 @@ Draw Things relies on `sdapi`, but there's not much documentation on how to use 
 
 Basically, it works like this:
 
+#### Endpoints
+
+The endpoints provided by DT are:
+
+```python
+
+    (http://{IP}:{PORT}/txt2img)
+```
+
+```python
+    (http://{IP}:{PORT}/img2img)
+
+```
+
 #### Request Method
 
 We push a request to the localhost containing the JSON payload, which is a fixed template of variables that `sdapi` interprets and applies to generate images.
