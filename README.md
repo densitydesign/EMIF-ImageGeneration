@@ -293,7 +293,7 @@ total_images = 0
 processed_filenames = set()
 if os.path.exists(logfile_path):
     with open(logfile_path, 'r') as logfile:
-        processed_filenames.update(line.strip() for line in logfile.readlines()[1:])  # Skip the header
+        processed_filenames.update(line.strip() for line in logfile.readlines()[1:])
 ```
 
 ### As before, we keep track of the system metrics involved in this process
@@ -327,86 +327,68 @@ with tqdm(total=total_images, desc="Processing Images") as pbar:
                     pbar.update(1)
                     continue
 
-                # Construct the full path of the image file
                 image_path = os.path.join(root, filename)
 
-                # Determine the relative path of the original image
                 relative_path = os.path.relpath(root, root_folder_path)
 ```
 ### After having identified the img to process, we proceed encoding it into base64 and feeding it to the img2img_data:
 ```python
 
-                # Encode the image as base64
                 base64_image = encode_image_to_base64(image_path)
 
                 if base64_image:
                     try:
-                        # Update the img2img_data with the base64 image
                         img2img_data["init_images"] = [base64_image]
 
-                        # Measure start time
                         start_time = time.time()
 
-                        # Monitor system resources before making the request
                         cpu_usage = psutil.cpu_percent()
-                        ram_usage = psutil.virtual_memory().used / (1024 * 1024)  # Convert to MB
+                        ram_usage = psutil.virtual_memory().used / (1024 * 1024)
 
-                        # Send a POST request to the Draw Things API with img2img_data
                         response_upscale = requests.post(url_img2img, json=img2img_data)
 
-                        # Measure end time
                         end_time = time.time()
 
-                        # Parse the JSON response
                         r = response_upscale.json()
-
-                        # Print the response for debugging
-                        #print("Response from API:", r)
-
-                        # Loop through the images in the response
+                        
                         for idx, image_base64 in enumerate(r.get('images', [])):
-                            # Decode the base64 image data
+                            
                             image_data = base64.b64decode(image_base64.split(",", 1)[0])
 
-                            # Open the image using PIL
+                            
                             image = Image.open(io.BytesIO(image_data))
 
-                            # Define the output filename
+                            
                             output_filename = os.path.splitext(filename)[0] + f"_upscaled_{idx+1}.png"
 
-                            # Define the path to save the image with relative structure
+                            
                             relative_output_folder_path = os.path.join(output_folder_path, relative_path)
                             os.makedirs(relative_output_folder_path, exist_ok=True)
                             output_image_path = os.path.join(relative_output_folder_path, output_filename)
 
-                            # Save the image as a PNG file
+                            
                             image.save(output_image_path)
 
-                            # Print status message
                             print(f"Upscaled image saved as: {output_image_path}")
 ```
 ### After having collected the result image we update the TQDM which is tracking the process, update the CSV and the log file:
 ``` python
 
-                            # Update progress bar
                             pbar.update(1)
 
-                        # Calculate processing time
                         processing_time = end_time - start_time
 
-                        # Write metrics to CSV file
                         with open(metrics_file_path, 'a', newline='') as metrics_file:
                             writer = csv.writer(metrics_file)
                             writer.writerow([filename, ram_usage, cpu_usage, processing_time])
 
                         pbar.set_postfix(Time=f"{processing_time:.2f}s")
 
-                        # Add processed filename to the log file
                         with open(logfile_path, 'a') as logfile:
                             logfile.write(f"{filename}\n")
 
                     except requests.RequestException as e:
-                        # Print an error message if there's an issue with the request
+                        
                         print(f"Error processing {filename}:", e)
             else:
                 print(f"Skipping {filename}: Unsupported file format")
