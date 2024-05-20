@@ -198,7 +198,7 @@ with open(csv_path, mode='w', newline='') as file:
                             writer.writerow([chosen_nation, category, image_base64, image_filename, cpu_usage, ram_usage])
 
 ### PIL is used as corruption - checker in order to understand if the decoded IMG is healthy.
-                            try:
+                            `try:
                                 # Attempt to open the saved file with PIL to check for corruption
                                 with Image.open(image_path) as img:
                                     # If the file opens successfully, print a message indicating that the image is not corrupted
@@ -209,11 +209,11 @@ with open(csv_path, mode='w', newline='') as file:
 
                     except requests.RequestException as e:
                         # Print an error message if there's an issue with the request
-                        print(f"{BOLD}Error: {e}{RESET}")
+                        print(f"{BOLD}Error: {e}{RESET}")`
 
 ### Finally, we continue the process
-                        # Continue to the next iteration if an error occurs
-                        continue
+                        `# Continue to the next iteration if an error occurs
+                        continue`
 
     
 
