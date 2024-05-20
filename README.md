@@ -1,5 +1,6 @@
 # EMIF-ImageGeneration
 Private repository for the Stable Diffusion image generation pipeline.
+---
 
 ## The Guide
 Below you'll find a practical guide on how to access the Python code responsible for the image generation pipeline.
@@ -8,19 +9,22 @@ Below you'll find a practical guide on how to access the Python code responsible
 
 ### Draw Things
 
-For the whole generation pipeline, we used **Draw Things**, an app for image generation widely used on ARM64 Macs (since our machines were M1 Pro Macs). Draw Things is very efficient compared to (let's guess) AUTOMATIC1111.
+For the whole generation pipeline, we used **[Draw Things](https://drawthings.ai/)**, an app for image generation widely used on ```ARM64 Macs``` (since our machines were M1 Pro Macs).
+Draw Things is very efficient compared to (let's guess) AUTOMATIC1111. 🎨
 
 Theoretically speaking, our stable diffusion process worked like this:
 
-We bake a prompt via `txt2img` generation using the **Stable Diffusion XL official model** as our base model.
+We applied a prompt via `txt2img` generation using the [Stable Diffusion XL official model](https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0) as our base model.
 
 > **IMPORTANT**: We forced ourselves to use the base SDXL model to keep the results coherent with the LAION dataset. We noticed that using checkpoints as base models contributed heavily to biases in the generations, creating patterns of colors, objects, subjects, etc., that were not consistent with the LAION dataset itself.
 
-Then we pass this image to the **Stable Diffusion XL Official Refiner** at 70% of the generation. This step allows us to achieve way more details in the final image rather than just a one-shot base model. Then, the image is passed again to the Hi-Res fix of SDXL. This passage is mainly intended to remove deformations in subjects and aberrations. Also, this step allows us to achieve way more details inside images and contributes to generic image stabilization.
+Then we pass this image to the **Stable Diffusion XL Official Refiner** at ```70%``` of the generation. This step allows us to achieve way more details in the final image rather than just a one-shot base model. Then, the image is passed again to the ```Hi-Res fix of SDXL```. This passage is mainly intended to remove deformations in subjects and aberrations. Also, this step allows us to achieve way more details inside images and contributes to generic image stabilization. 🔄
 
-Having obtained a `1024x1024` image, we then pass it to **UltraSharp4x upscaler** with a `200%` upscale size to achieve a `2048x2048` image we could actively work on for printing purposes. 2048px corresponds roughly to 4cm in a hypothetical 300dpi printing.
+Having obtained a `1024x1024` image, we then pass it to **UltraSharp4x upscaler** with a `200%` upscale size to achieve a `2048x2048` image we could actively work on for printing purposes. 2048px corresponds roughly to 4cm in a hypothetical 300dpi printing. 🖨️
 
-Then we bake this image through an `img2img` process using a mixture of **ControlNet**, tiling mechanism, and base `img2img` using the **JUGGERNAUT model variation of SDXL**. In order to not lose the overall image, which is our main goal, the percentage of `img2img` generations was limited to `30%`. This particular value allows us to intervene on the single objects of the generations, to restore their deformed shapes into photographic quality objects. The parameters used for the various `ControlNet` were tweaked from the original ones to achieve a smoother and less crisp image.
+Then we bake this image through an `img2img` process using a mixture of **ControlNet**, tiling mechanism, and base `img2img` using the **[JUGGERNAUT model variation of SDXL](https://civitai.com/models/133005/juggernaut-xl)**.
+
+In order to not "lose" the overall image, which is our main goal, the percentage of `img2img` generations was limited to `30%`. This particular value allows us to intervene on the single objects of the generations, to restore their deformed shapes into photographic quality objects. The parameters used for the various `ControlNet` were tweaked from the original ones to achieve a smoother and less crisp image.
 
 The original script used for this step is called "Creative Upscale" and is user-generated, available directly on Draw Things. Especially, we extracted the various parameters used and implemented those in the Python script we'll explain later.
 
@@ -61,11 +65,13 @@ You can find the complete `sdapi` payload in the file named: `api_payload list`.
 
 ## The pipeline itself
 
-For our purposes we structured the pipeline this way: [img]
+For our purposes, we structured the pipeline this way: [img]
 
 The first script is responsible of generating the images, the second, to augment them as we explained in the beginning. Here below we show the 2 scripts that actually do this.
 
 We'll take some lines to analyze each of them, in-depth:
+
+---
 
 # Generation
 
