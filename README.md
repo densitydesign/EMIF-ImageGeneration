@@ -34,7 +34,7 @@ The original script used for this step is called "Creative Upscale" and is user-
 
 The output of this process is a `2048x2048` image, highly photorealistic, loyal to the LAION dataset and SDXL generation mechanism.
 
-![Output comparison](/comparison_or_up.png)
+![Output comparison](/comparison_or_up.jpg)
 
 ## Theoretical Background of Draw Things Platform
 
@@ -415,15 +415,39 @@ with tqdm(total=total_images, desc="Processing Images") as pbar:
 ```
 ### Then we just move over to the next unprocessed img.
 
-The output of the entire pipeline is a folder of 2048x2048 images, highly photorealistic.
+The output of the entire pipeline is a folder of ```2048x2048 images, highly photorealistic.```
+
 The structure of the output is:
 
 ```
 GENERATION
-|-Nation
-    |--Workers
-    |--Family
+
+|-Nation 1
+|    |--Workers
+|    |--Family
+|
+|-Nation 2
+|    |--Workers
+|    |--Family
+|
+|-Nation 3
+|    |--Workers
+|    |--Family
+
+...
 ```
+
+## Files
+
+- (Text2Img_pipeline.py) = Script to generate images
+- (Img2img_pipeline.py) = Script to Creative Upscale them
+
+- (variable_set.py) = Variables for nations/subjects
+- (api_parameters_txt2img.py) = API Parameters for txt2img
+- (api_parameters_img2img.py) = API Parameters for txt2img
+
+- (sdapi-options.json) = Generic API Parameters
+
 # Image segmentation
 
 We need then to proceed with img-segmenetation to divide the various objects of the images.
@@ -431,7 +455,18 @@ To automate this process we used the SegmentAnything library of META AI, tweaked
 
 The output of this script is a folder strctured the same way sa before but with pieces of images, each in 1:1 png with the same location as before, cut-outed from everything else.
 
+---
 
+# Reference and tools
 
+[Civit.Ai for models, checkpoints and Loras](https://civitai.com/models)
 
+[Base64 Converter to try in-ou with response](https://base64.guru/converter/encode/image)
 
+[Json parser to look better inside endpoints](http://json.parser.online.fr/)
+
+[Discussions on img2img problems/1](https://github.com/AUTOMATIC1111/stable-diffusion-webui/discussions/9275)
+
+[The most updated doc on sdapi API I could find](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/API)
+
+[Official Reddit for DT](https://www.reddit.com/r/drawthingsapp/)
